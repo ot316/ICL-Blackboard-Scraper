@@ -17,18 +17,16 @@ def check_args_error():
 
 
 #setup chrome and chromedriver
-def setup():
+def setup(download_dir):
     chrome_options = Options()
     chrome_options.add_experimental_option('prefs',  {
-        #"download.default_directory": download_dir,
+        "download.default_directory": download_dir,
         "download.prompt_for_download": False,
         "download.directory_upgrade": True,
         "plugins.always_open_pdf_externally": True
         }
     )
     #options.add_argument("--window-size=1080,720")
-    
-    
     DRIVER_PATH= os.getcwd() + "/chromedriver" # path to chromedriver exeutable, default to linux
     #check os type and choose drier accordingly
     if platform.system()  == 'Windows':
@@ -77,10 +75,28 @@ def show_all_modules(scraper):
     submit = scraper.find_element_by_id("bottom_Submit").click()
     navigate_back(scraper, 2)
 
+# scan page for links and click each one, when a link is clicked the function is called recursively and all links inside that link are clicked and so on.
+def click_all_links(scraper):
+    for ii in range(0,len(scan_for_links(scraper))):
+        links = scan_for_links(scraper)
+        url = scraper.current_url
+        try:
+            links[ii].click()
+            scraper.switch_to.window(main_window)
+            # If the url has changed, that means a new page has loaded and the navigate_back function must be called after it has been scanned. If it is just a file that is downloaded, 
+            # the url will be the same and the navigate_back function does not need to be called
+            if not url == scraper.current_url:
+                print("page has changed")
+                click_all_links(scraper)
+                navigate_back(scraper, 1)
+        except:
+            pass  
+
 
 # navigate back a certain number of pages.
 def navigate_back(scraper, number_of_pages):
     scraper.execute_script(f"window.history.go(-{number_of_pages})") 
+    # if the function navigates too far backwards, it checks for the stale request warning page and moves back forwards 1 page.
     try:
         scraper.find_element_by_xpath("//*[contains(text(), 'Imperial College London Authentication - Stale Request')]")
         print("stale request, too far back, moving forwards to home page")
@@ -98,20 +114,37 @@ def scan_for_modules(scraper):
 
 # scans for links inside a module
 def scan_for_links(scraper):
-    items = scraper.find_element_by_xpath("//ul[contains(@id, 'content_listContainer')]")
-    links = items.find_elements_by_xpath('.//a[not(contains(@class, "button"))]')    
+    try:
+        items = scraper.find_element_by_xpath("//ul[contains(@id, 'content_listContainer')]")
+        links = items.find_elements_by_xpath('.//a[not(contains(@class, "button"))]')
+    except:
+        try:
+            items = scraper.find_element_by_xpath("//ul[contains(@id, 'currentAttempt_submissionList')]")
+            links = items.find_elements_by_xpath('.//a[not(contains(@class, "button"))]')
+        except:
+            links = []
     return links
 
-  
+
+def clean_tabs(scraper):
+    scraper.switch_to.window(main_window)
+    if len(driver.window_handles) > 1:
+        scraper.find_element_by_tag_name('body').send_keys(Keys.CONTROL + Keys.TAB)
+        scraper.find_element_by_tag_name('body').send_keys(Keys.CONTROL + 'w')
+        scraper.switch_to.window(main_window)
+        clean_tabs()
+        
+        
 def exit(scraper):
     scraper.quit()
     print("Closing down")
     sys.exit()
 
+
 # main
 if __name__ == "__main__":
     check_args_error()
-    scraper = setup()
+    scraper = setup(os.getcwd())
     URL = "https://bb.imperial.ac.uk/webapps/portal/execute/tabs/tabAction?tab_tab_group_id=_1_1"
     scraper.get(URL)    
     USERNAME= sys.argv[1]
@@ -121,21 +154,9 @@ if __name__ == "__main__":
     #show_all_modules(scraper)
     for i in range(0,len(scan_for_modules(scraper))):
         sleep(1)
-        modules = scan_for_modules(scraper)
+        modules = scan_for_modules(scraper)            
         modules[i].click()
-        for ii in range(0,len(scan_for_links(scraper))):
-            sleep(0.5)
-            links = scan_for_links(scraper)
-            try:
-                links[ii].click()              
-            except:
-                pass
-            # check if a new tab has been opened, if it has it is moved to the background rather than navigating back.
-            if len(scraper.window_handles) > 1:
-                scraper.switch_to.window(main_window)
-            else:
-                navigate_back(scraper, 1)     
-        navigate_back(scraper, 5)      
-
-            
+        click_all_links(scraper)
+        cleanup_tabs(scraper)
+        navigate_back(scraper, 2)
     exit(scraper)
