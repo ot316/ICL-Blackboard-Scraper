@@ -21,7 +21,7 @@ def log_print(output):
 # checks correct number of arguments        
 def check_args_error():
     if len(sys.argv) != 3:
-        log_print("Incorrect usage, run file as 'python Blackboard-Scraper.py <username> <password>' If your password countains certain special characters such as '$' or ' ' replace them with '\$' and '\ ' etc.")
+        log_print("Incorrect usage, run file as 'python Blackboard-Scraper.py <username> <password>' If your password countains certain special characters such as '$' or ' ' replace them with the escape characters'\$' and '\ ' etc.\nIf this doesn't work, try encapsulating the password in inverted commas e.g. \"^193*()&^\"")
         sys.exit()
 
 # user warning notice
@@ -75,7 +75,7 @@ def login(USERNAME, PASSWORD, scraper):
         scraper.find_element_by_id("topframe.logout.label")
         log_print("Login Successful\n")
     except:
-        log_print("login failed, check details. If your password countains certain special characters such as '$' or ' ' replace them with '\$' and '\ ' etc.")
+        log_print("login failed, check details. If your password countains certain special characters such as '$' or ' ' replace them with the escape characters'\$' and '\ ' etc.\nIf this doesn't work, try encapsulating the password in inverted commas e.g. \"^193*()&^\"")
         exit(scraper)
     for i in range(0,timeout*10):
         try:
