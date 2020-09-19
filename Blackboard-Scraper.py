@@ -182,8 +182,13 @@ def organise_files(name):
         log_print("\nFailed to create module directory. \n" + str(e) + "\nAssuming that the directory already exists and continuing...\n")
         pass
     log_print(name + " Directory created\n")
-    source = "data\\"
-    dest = f'{name}\\'
+    # change filepath depending on operating system
+    if platform.system()  == 'Windows':
+        source = "data\\"
+        dest = f'{name}\\'
+    else:    
+        source = "data/"
+        dest = f'{name}/'
     purge_data(dest)
     download_check(source)
     files = os.listdir(source)
@@ -205,7 +210,10 @@ if __name__ == "__main__":
     purge_data('data')    
     disclaimer()
     check_args_error()
-    scraper = setup(os.getcwd() + '\data')
+    if platform.system()  == 'Windows':
+        scraper = setup(os.getcwd() + '\data')
+    else:    
+        scraper = setup(os.getcwd() + '/data')  
     URL = "https://bb.imperial.ac.uk/webapps/portal/execute/tabs/tabAction?tab_tab_group_id=_1_1"
     scraper.get(URL)    
     USERNAME= sys.argv[1]
