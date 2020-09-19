@@ -9,4 +9,4 @@ Only tested on Windows so far, but should work on Mac and linux. requires Python
 
 Please get in touch for any comments or improvements olithompson@protonmail.com
 
- [1] https://chromedriver.chromium.org/downloads
+ [1]: https://chromedriver.chromium.org/downloads
