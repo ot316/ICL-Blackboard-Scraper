@@ -50,7 +50,7 @@ def setup(download_dir):
     )
     chrome_options.add_argument("--window-size=1080,780")
     DRIVER_PATH= os.getcwd() + "/Linux/chromedriver" # path to chromedriver exeutable, default to linux
-    #check os type and choose drier accordingly
+    #check os type and choose driver accordingly
     if platform.system()  == 'Windows':
         DRIVER_PATH = os.getcwd() + "\Windows\chromedriver.exe"
     elif platform.system()  == 'Darwin':
@@ -69,14 +69,14 @@ def login(USERNAME, PASSWORD, scraper):
     login = scraper.find_element_by_id("username").send_keys(USERNAME)
     password = scraper.find_element_by_id("password").send_keys(PASSWORD)
     submit = scraper.find_element_by_name("_eventId_proceed").click()
-    #wait up to 2 seconds for cookie notice to appear
-    timeout = 2
     try:
         scraper.find_element_by_id("topframe.logout.label")
         log_print("Login Successful\n")
     except:
         log_print("login failed, check details. If your password countains certain special characters such as '$' or ' ' replace them with the escape characters'\$' and '\ ' etc.\nIf this doesn't work, try encapsulating the password in inverted commas e.g. \"^193*()&^\"")
         exit(scraper)
+    #wait up to 2 seconds for cookie notice to appear
+    timeout = 2    
     for i in range(0,timeout*10):
         try:
             cookies = scraper.find_element_by_id("agree_button").click()
@@ -87,7 +87,7 @@ def login(USERNAME, PASSWORD, scraper):
             pass    
     
 
-# alter the settings to show all modules on the home page if some are hidden
+# alter the blackboard settings to show all modules on the home page if some are hidden. Comment out the call to this function if you only wish to scrape certain modules.
 def show_all_modules(scraper):
     settings = scraper.find_element_by_xpath("//a[@title='Manage My Courses Module Settings']").click()
     allcheckboxes = scraper.find_elements_by_xpath("//*[contains(@id,'amc.showcourse._')]")
@@ -110,7 +110,7 @@ def click_all_links(scraper):
             links[i].click()
             scraper.switch_to.window(main_window)
             # If the url has changed, that means a new page has loaded and the navigate_back function must be called after it has been scanned. If it is just a file that is downloaded, 
-            # the url will be the same and the navigate_back function does not need to be called
+            # the url will be the same and the navigate_back function does not need to be called.
             if not url == scraper.current_url:
                 click_all_links(scraper)
                 navigate_back(scraper, 1)
@@ -220,7 +220,7 @@ if __name__ == "__main__":
     PASSWORD = sys.argv[2]
     login(USERNAME, PASSWORD, scraper)
     main_window = scraper.current_window_handle
-    #show_all_modules(scraper)
+    show_all_modules(scraper)
     for i in range(0,len(scan_for_modules(scraper))):
         sleep(1)
         modules = scan_for_modules(scraper)
