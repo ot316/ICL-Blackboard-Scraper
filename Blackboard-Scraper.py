@@ -38,7 +38,7 @@ def purge_data(folder):
     log_print(f"'{folder}' Directory purged")
     os.mkdir(folder)
 
-#setup chrome and chromedriver
+# setup chrome and chromedriver
 def setup(download_dir):
     chrome_options = Options()
     chrome_options.add_experimental_option('prefs',  {
@@ -64,7 +64,7 @@ def setup(download_dir):
     return scraper
 
 
-#login to blackboard
+# login to blackboard
 def login(USERNAME, PASSWORD, scraper):
     login = scraper.find_element_by_id("username").send_keys(USERNAME)
     password = scraper.find_element_by_id("password").send_keys(PASSWORD)
@@ -154,7 +154,7 @@ def scan_for_links(scraper):
             links = []
     return links
 
-
+# close extraneous tabs
 def cleanup_tabs(scraper):
     scraper.switch_to.window(main_window)
     while len(scraper.window_handles) > 2:
@@ -165,8 +165,9 @@ def cleanup_tabs(scraper):
         sleep(0.1)
         scraper.switch_to.window(main_window)
 
-
-def organise_files(name):   
+# organise downloaded files into a directory named with the module title
+def organise_files(name):  
+    # check if downloads are still in progress by looking for .crdownload files
     def download_check(source):
         files = os.listdir(source)
         for file in files:
@@ -192,11 +193,12 @@ def organise_files(name):
     purge_data(dest)
     download_check(source)
     files = os.listdir(source)
+    # move files from temprary data diretory to labelled new directory
     for file in files:    
         shutil.move(source + file, dest)
     log_print("Files Moved\n")    
         
-        
+# quit the program        
 def exit(scraper):
     scraper.quit()
     log_print("Closing down")
@@ -220,7 +222,7 @@ if __name__ == "__main__":
     PASSWORD = sys.argv[2]
     login(USERNAME, PASSWORD, scraper)
     main_window = scraper.current_window_handle
-    #show_all_modules(scraper)
+    show_all_modules(scraper)
     for i in range(0,len(scan_for_modules(scraper))):
         sleep(1)
         modules = scan_for_modules(scraper)
