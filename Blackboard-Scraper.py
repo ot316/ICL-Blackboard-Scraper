@@ -42,7 +42,7 @@ def purge_data(folder):
 def setup(download_dir):
     chrome_options = Options()
     chrome_options.add_experimental_option('prefs',  {
-        "download.default_directory": download_dir,
+        #"download.default_directory": download_dir,
         "download.prompt_for_download": False,
         "download.directory_upgrade": True,
         "plugins.always_open_pdf_externally": True
@@ -213,7 +213,8 @@ if __name__ == "__main__":
     disclaimer()
     check_args_error()
     if platform.system()  == 'Windows':
-        scraper = setup(os.getcwd() + '\data')
+        scraper = setup(os.getcwd() + '\\data')
+        print(os.getcwd() + '\\data')
     else:    
         scraper = setup(os.getcwd() + '/data')  
     URL = "https://bb.imperial.ac.uk/webapps/portal/execute/tabs/tabAction?tab_tab_group_id=_1_1"
@@ -222,7 +223,7 @@ if __name__ == "__main__":
     PASSWORD = sys.argv[2]
     login(USERNAME, PASSWORD, scraper)
     main_window = scraper.current_window_handle
-    show_all_modules(scraper)
+    #show_all_modules(scraper)
     for i in range(0,len(scan_for_modules(scraper))):
         sleep(1)
         modules = scan_for_modules(scraper)
