@@ -89,20 +89,32 @@ def login(USERNAME, PASSWORD, scraper):
 # This function checks if the module uses blackboard's table of contents structure and behaves slightly differently.
 def check_for_contents(scraper):
     try:
-        contents = scraper.find_elements_by_xpath("//a[contains(@class, 'tocItem')]") 
-        for i in range(0,len(contents)):
-            contents = scraper.find_elements_by_xpath("//a[contains(@class, 'tocItem')]") 
-            contents[i].click()
-            link = scraper.find_element_by_xpath("//div[contains(@class, 'item clearfix')]")
-            url = link.find_element_by_xpath("//a[contains(text(), 'here')]").get_attribute('href') + "&launch_in_new=true"
-            print(url)
+        contents = scraper.find_element_by_xpath("//h2[@id='tocTitle']")         
+        count = 1
+    except:
+        return False
+    while True:
+        cleanup_tabs(scraper)
+        try:
+            url = scraper.find_element_by_xpath("//a[contains(text(), 'here')]").get_attribute('href') + "&launch_in_new=true"
             scraper.get(url)
             scraper.switch_to.window(main_window)
-            navigate_back(scraper, 1)
-    except Exception as e: 
-        navigate_back(scraper, 1)
-        print(e)
-        pass
+            navigate_back(scraper, 1)                        
+        except:
+            try:
+                body = scraper.find_element_by_xpath("//ul[@class='attachments clearfix']")
+                pdf = body.find_element_by_xpath(".//a").get_attribute('href')
+                scraper.get(pdf)   
+                scraper.switch_to.window(main_window)                
+            except:
+                pass
+        try:
+            sleep(0.1)
+            next_button = scraper.find_element_by_xpath('//img[@alt="Next item"]').click()
+            count += 1
+        except:
+            navigate_back(scraper, count)
+            return True
 
 # alter the blackboard settings to show all modulezzzs on the home page if some are hidden. Comment out the call to this function if you only wish to scrape certain modules.
 def show_all_modules(scraper):
@@ -125,6 +137,7 @@ def click_all_links(scraper):
         try:
             sleep(0.1)
             links[i].click()
+            contents = False
             contents = check_for_contents(scraper)
             scraper.switch_to.window(main_window)
             # If the url has changed, that means a new page has loaded and the navigate_back function must be called after it has been scanned. If it is just a file that is downloaded, 
