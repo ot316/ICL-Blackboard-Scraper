@@ -42,7 +42,7 @@ def purge_data(folder):
 def setup(download_dir):
     chrome_options = Options()
     chrome_options.add_experimental_option('prefs',  {
-        #"download.default_directory": download_dir,
+        "download.default_directory": download_dir,
         "download.prompt_for_download": False,
         "download.directory_upgrade": True,
         "plugins.always_open_pdf_externally": True
@@ -86,8 +86,25 @@ def login(USERNAME, PASSWORD, scraper):
             sleep(0.5)
             pass    
     
+# This function checks if the module uses blackboard's table of contents structure and behaves slightly differently.
+def check_for_contents(scraper):
+    try:
+        contents = scraper.find_elements_by_xpath("//a[contains(@class, 'tocItem')]") 
+        for i in range(0,len(contents)):
+            contents = scraper.find_elements_by_xpath("//a[contains(@class, 'tocItem')]") 
+            contents[i].click()
+            link = scraper.find_element_by_xpath("//div[contains(@class, 'item clearfix')]")
+            url = link.find_element_by_xpath("//a[contains(text(), 'here')]").get_attribute('href') + "&launch_in_new=true"
+            print(url)
+            scraper.get(url)
+            scraper.switch_to.window(main_window)
+            navigate_back(scraper, 1)
+    except Exception as e: 
+        navigate_back(scraper, 1)
+        print(e)
+        pass
 
-# alter the blackboard settings to show all modules on the home page if some are hidden. Comment out the call to this function if you only wish to scrape certain modules.
+# alter the blackboard settings to show all modulezzzs on the home page if some are hidden. Comment out the call to this function if you only wish to scrape certain modules.
 def show_all_modules(scraper):
     settings = scraper.find_element_by_xpath("//a[@title='Manage My Courses Module Settings']").click()
     allcheckboxes = scraper.find_elements_by_xpath("//*[contains(@id,'amc.showcourse._')]")
@@ -108,10 +125,11 @@ def click_all_links(scraper):
         try:
             sleep(0.1)
             links[i].click()
+            contents = check_for_contents(scraper)
             scraper.switch_to.window(main_window)
             # If the url has changed, that means a new page has loaded and the navigate_back function must be called after it has been scanned. If it is just a file that is downloaded, 
             # the url will be the same and the navigate_back function does not need to be called.
-            if not url == scraper.current_url:
+            if not url == scraper.current_url and not contents:
                 click_all_links(scraper)
                 navigate_back(scraper, 1)
             else:
@@ -210,10 +228,10 @@ if __name__ == "__main__":
     open("log.txt", "w").close()
     log_print("Clearing log.txt")
     purge_data('data')    
-    disclaimer()
+    #disclaimer()
     check_args_error()
     if platform.system()  == 'Windows':
-        scraper = setup(os.getcwd() + '\\data')
+        scraper = setup(os.getcwd() + '\data')
         print(os.getcwd() + '\\data')
     else:    
         scraper = setup(os.getcwd() + '/data')  
@@ -233,4 +251,4 @@ if __name__ == "__main__":
         navigate_back(scraper, 2)
         organise_files(module_name)
         log_print(f"\nFiles downloaded and organised for '{module_name}'\n")
-    exit(scraper)
+    #exit(scraper)
