@@ -12,4 +12,6 @@ Please get in touch for any comments or improvements olithompson@protonmail.com
 ## Known issues
 1. The script cannot download files through turnitin yet
 2. The .py and .mat file types cannot be automatically downloaded as chrome thinks they are a security risk. They will stay on the downloads page and must be manually confirmed before they will download. Then they must then be manually organised.
+
+
  [1]: https://chromedriver.chromium.org/downloads
