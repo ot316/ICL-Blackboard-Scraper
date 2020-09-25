@@ -48,7 +48,7 @@ def setup(download_dir):
         "plugins.always_open_pdf_externally": True
         }
     )
-    chrome_options.add_argument("--window-size=1080,780")
+    chrome_options.add_argument("--window-size=1080,720")
     DRIVER_PATH= os.getcwd() + "/Linux/chromedriver" # path to chromedriver exeutable, default to linux
     #check os type and choose driver accordingly
     if platform.system()  == 'Windows':
@@ -153,15 +153,17 @@ def click_all_links(scraper):
 
 # navigate back a certain number of pages.
 def navigate_back(scraper, number_of_pages):
-    scraper.execute_script(f"window.history.go(-{number_of_pages})") 
-    # if the function navigates too far backwards, it checks for the stale request warning page and moves back forwards 1 page.
-    try:
-        scraper.find_element_by_xpath("//*[contains(text(), 'Imperial College London Authentication - Stale Request')]")
-        log_print("Stale request, navigated too far back, moving forwards to home page")
-        scraper.execute_script("window.history.go(1)") 
-    except:
-        pass    
-
+    for i in range(0,number_of_pages):
+        scraper.execute_script(f"window.history.go(-1)") 
+        # if the function navigates too far backwards, it checks for the stale request warning page and moves back forwards 1 page.
+        try:
+            scraper.find_element_by_xpath("//*[contains(text(), 'Imperial College London Authentication - Stale Request')]")
+            log_print("Stale request, navigated too far back, moving forwards to home page")
+            scraper.execute_script("window.history.go(1)") 
+            return
+        except:
+            pass    
+    
 
 # scans the home page for modules
 def scan_for_modules(scraper):
@@ -181,9 +183,9 @@ def scan_for_links(scraper):
             items = scraper.find_element_by_xpath("//ul[contains(@id, 'currentAttempt_submissionList')]")
             links = items.find_elements_by_xpath('.//a[not(contains(@class, "button"))]')
         except:
-            log_print("No further links found, returning...")
-            links = []
+            links = []         
     return links
+
 
 # close extraneous tabs
 def cleanup_tabs(scraper):
@@ -191,10 +193,11 @@ def cleanup_tabs(scraper):
     while len(scraper.window_handles) > 2:
         keyboard.press_and_release('ctrl+tab')
         keyboard.press_and_release('ctrl+tab')
-        sleep(0.1)
+        sleep(0.3)
         keyboard.press_and_release('ctrl+w')
-        sleep(0.1)
+        sleep(0.3)
         scraper.switch_to.window(main_window)
+
 
 # organise downloaded files into a directory named with the module title
 def organise_files(name):  
@@ -202,8 +205,9 @@ def organise_files(name):
     def download_check(source):
         files = os.listdir(source)
         for file in files:
-            if file.endswith('.crdownload'):
+            if file.endswith('.crdownload') and not file[12:-11].isnumeric():
                 log_print("Waiting for files to finish downloading...")
+                print(file)
                 sleep(5)                
                 download_check(source)
 
@@ -225,8 +229,9 @@ def organise_files(name):
     download_check(source)
     files = os.listdir(source)
     # move files from temprary data diretory to labelled new directory
-    for file in files:    
-        shutil.move(source + file, dest)
+    for file in files:
+        if not file.endswith('.crdownload'):
+            shutil.move(source + file, dest)
     log_print("Files Moved\n")    
         
 # quit the program        
@@ -244,8 +249,9 @@ if __name__ == "__main__":
     #disclaimer()
     check_args_error()
     if platform.system()  == 'Windows':
-        scraper = setup(os.getcwd() + '\data')
-        print(os.getcwd() + '\\data')
+        data_dir = os.getcwd() + '\data'
+        scraper = setup(data_dir)
+        log_print(f"Download directory is: {data_dir}")
     else:    
         scraper = setup(os.getcwd() + '/data')  
     URL = "https://bb.imperial.ac.uk/webapps/portal/execute/tabs/tabAction?tab_tab_group_id=_1_1"
@@ -255,13 +261,31 @@ if __name__ == "__main__":
     login(USERNAME, PASSWORD, scraper)
     main_window = scraper.current_window_handle
     #show_all_modules(scraper)
+    # Iterate through modules
     for i in range(0,len(scan_for_modules(scraper))):
         sleep(1)
         modules = scan_for_modules(scraper)
         module_name = modules[i].text
+        log_print(f"Scraping '{module_name}'")
         modules[i].click()
-        click_all_links(scraper)
-        navigate_back(scraper, 2)
+        # Look for content in the following directories 
+        items_to_check = ['Course Content','Week Materials', 'Module Descriptor', 'Additional info', 'Assignment Information', 'Assignment Submission']
+        #menuPuller = scraper.find_element_by_id("menuPuller").click()
+        for item_to_check in items_to_check:
+            try:
+                scraper.find_element_by_xpath(f"//span[contains(text(), '{item_to_check}')]").click()
+                click_all_links(scraper)
+                sleep(0.5)
+                log_print("checked", item_to_check)
+            except Exception as e:
+                print(e)
+                pass
+        navigate_back(scraper, 8)
         organise_files(module_name)
         log_print(f"\nFiles downloaded and organised for '{module_name}'\n")
-    #exit(scraper)
+    log_print("Scraping Finished")
+    files = os.listdir(data_dir)
+    for file in files:
+        if file.endswith('.crdownload') and file[12:-11].isnumeric():
+            log_print("A file has a warning and couldn't be downloaded automatically, probably because chrome has deteccted it as a threat. It will remain in the download page of chrome and must be downloaded and organised manually.")              
+    exit(scraper)
