@@ -10,7 +10,7 @@ The scraper looks through the modules that are visible on blackboard's homepage,
 
 1. Install Python 3.6
 2. Install the dependencies listed in requirements.txt (e.g. using Windows ```pip install requirements.txt```)
-3. Install Chrome (the chromedrivers suplied here work with chrome version 85, different drivers can be found [here][1])
+3. Install Chrome (the chromedrivers supplied here work with chrome version 85, different drivers can be found [here][1])
 4. Run with ```python Blackboard-Scraper.py <username> <password>``` where username and password are your blackboard credentials.
 
 ## Known issues
