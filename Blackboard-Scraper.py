@@ -145,6 +145,11 @@ def click_all_links(scraper):
             contents = False
             contents = check_for_contents(scraper)
             scraper.switch_to.window(main_window)
+            try:
+                scraper.find_element_by_xpath("//*[@text()='Submit Turnitin Assignment']")
+                turnitin_download(scraper)
+            except:
+                pass
             # If the url has changed, that means a new page has loaded and the navigate_back function must be called after it has been scanned. If it is just a file that is downloaded, 
             # the url will be the same and the navigate_back function does not need to be called.
             if not url == scraper.current_url and not contents:
@@ -191,6 +196,10 @@ def scan_for_links(scraper):
             links = []         
     return links
 
+
+def turnitin_download(scraper):
+    #to do
+    pass
 
 # close extraneous tabs
 def cleanup_tabs(scraper):
