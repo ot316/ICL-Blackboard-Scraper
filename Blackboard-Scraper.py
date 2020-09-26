@@ -31,6 +31,15 @@ def disclaimer():
     if text.lower() != "y":
         sys.exit()
     log_print("\n")
+
+
+# Checks Python version at runtime
+def check_version(version):
+    version = str(version)
+    log_print(f"Using Python {sys.version}")
+    if sys.version_info[0] < int(version[0]) or sys.version_info[1] < int(version[2]):
+        log_print(f"Must be using Python {version}")
+        raise Exception(f"Must be using Python {version}")
         
 # clear the argument directory of data
 def purge_data(folder):
@@ -257,10 +266,12 @@ def exit(scraper):
 
 # main
 if __name__ == "__main__":
+    # clear log
     open("log.txt", "w").close()
     log_print("Clearing log.txt")
-    purge_data('data')    
-    #disclaimer()
+    purge_data('data')
+    check_version(3.6)
+    disclaimer()
     check_args_error()
     if platform.system()  == 'Windows':
         data_dir = os.getcwd() + '\data'
