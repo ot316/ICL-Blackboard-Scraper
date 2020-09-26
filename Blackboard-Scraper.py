@@ -89,7 +89,8 @@ def login(USERNAME, PASSWORD, scraper):
 # This function checks if the module uses blackboard's table of contents structure and behaves slightly differently.
 def check_for_contents(scraper):
     try:
-        contents = scraper.find_element_by_xpath("//h2[@id='tocTitle']")         
+        contents = scraper.find_element_by_xpath("//h2[@id='tocTitle']") 
+        print("contents mode")        
         count = 1
     except:
         return False
@@ -128,7 +129,7 @@ def show_all_modules(scraper):
     navigate_back(scraper, 2)
     sleep(1)
         
-# scan page for links and click each one, when a link is clicked the function is called recursively and all links inside that link are clicked and so on.
+# scan page for links, and click each one providing it is not an email address. When a link is clicked the function is called recursively and all links inside that link are clicked and so on.
 def click_all_links(scraper):
     cleanup_tabs(scraper)
     for i in range(0,len(scan_for_links(scraper))):
@@ -136,7 +137,11 @@ def click_all_links(scraper):
         url = scraper.current_url      
         try:
             sleep(0.1)
-            links[i].click()
+            # ignore emails
+            if '@' not in links[i].text:
+                links[i].click()
+            else:
+                log_print("Ignoring Email")
             contents = False
             contents = check_for_contents(scraper)
             scraper.switch_to.window(main_window)
@@ -207,7 +212,7 @@ def organise_files(name):
         for file in files:
             if file.endswith('.crdownload') and not file[12:-11].isnumeric():
                 log_print("Waiting for files to finish downloading...")
-                print(file)
+                log_print(file)
                 sleep(5)                
                 download_check(source)
 
@@ -215,7 +220,7 @@ def organise_files(name):
     try:
         os.mkdir(name)
     except Exception as e:
-        log_print("\nFailed to create module directory. \n" + str(e) + "\nAssuming that the directory already exists and continuing...\n")
+        log_print(f"\nFailed to create module directory. \n{str(e)}\nAssuming that the directory already exists and continuing...\n")
         pass
     log_print(name + " Directory created\n")
     # change filepath depending on operating system
@@ -269,16 +274,22 @@ if __name__ == "__main__":
         log_print(f"Scraping '{module_name}'")
         modules[i].click()
         # Look for content in the following directories 
-        items_to_check = ['Course Content','Week Materials', 'Module Descriptor', 'Additional info', 'Assignment Information', 'Assignment Submission']
-        #menuPuller = scraper.find_element_by_id("menuPuller").click()
-        for item_to_check in items_to_check:
+        content = 'Course Content'
+        other_content = ['Week Materials', 'Module Descriptor', 'Additional info', 'Assignment Information', 'Assignment Submission']
+        # check for course content first, if not present scraper the home directory.
+        try:
+            scraper.find_element_by_xpath(f"//span[contains(text(), '{content}')]").click()
+            click_all_links(scraper)
+        except:
+            click_all_links(scraper)
+        # now scrape the other directories
+        for content in other_content:
             try:
-                scraper.find_element_by_xpath(f"//span[contains(text(), '{item_to_check}')]").click()
+                scraper.find_element_by_xpath(f"//span[contains(text(), '{content}')]").click()
                 click_all_links(scraper)
                 sleep(0.5)
-                log_print("checked", item_to_check)
-            except Exception as e:
-                print(e)
+                log_print(f"Checked: {content}")
+            except:
                 pass
         navigate_back(scraper, 8)
         organise_files(module_name)
