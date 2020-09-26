@@ -2,7 +2,8 @@
 This script will login to blackboard and download all the files to labelled directories.
 Only tested on Windows so far, but should work on Mac and linux. requires Python 3.6
 
-![Screenshot](https://github.com/ot316/ICL-Blackboard-Scraper/blob/master/screenshot.PNG)
+<img src="https://github.com/ot316/ICL-Blackboard-Scraper/blob/master/screenshot.PNG" alt="screenshot" width="200"/>
+
 
 
 1. Install Python 3.6
