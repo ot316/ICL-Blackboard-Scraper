@@ -2,7 +2,7 @@
 This script will login to blackboard and download all the files to labelled directories.
 Only tested on Windows so far, but should work on Mac and linux. requires Python 3.6
 
-![Screenshot](./screenshot.PNG =250x)
+![Screenshot](/screenshot.PNG =250x)
 
 
 1. Install Python 3.6
