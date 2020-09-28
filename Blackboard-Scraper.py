@@ -155,7 +155,7 @@ def click_all_links(scraper):
             contents = check_for_contents(scraper)
             scraper.switch_to.window(main_window)
             try:
-                scraper.find_element_by_xpath("//*[@text()='Submit Turnitin Assignment']")
+                scraper.find_element_by_xpath("//*[contains(text(), 'Submit Turnitin Assignment')]")
                 turnitin_download(scraper)
             except:
                 pass
@@ -206,9 +206,11 @@ def scan_for_links(scraper):
     return links
 
 
+# Downlaod a file submitted to Turnitin
 def turnitin_download(scraper):
     #to do
     pass
+
 
 # close extraneous tabs
 def cleanup_tabs(scraper):
