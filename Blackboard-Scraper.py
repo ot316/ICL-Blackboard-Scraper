@@ -236,7 +236,6 @@ def organise_files(name):
                 sleep(5)                
                 download_check(source)
 
-            
     try:
         os.mkdir(name)
     except Exception as e:
@@ -314,7 +313,7 @@ if __name__ == "__main__":
             except:
                 pass
         navigate_back(scraper, 8)
-        organise_files(module_name)
+        organise_files(module_name.replace(r"/", " ").replace(":", " "))
         log_print(f"\nFiles downloaded and organised for '{module_name}'\n")
     log_print("Scraping Finished")
     files = os.listdir(data_dir)
