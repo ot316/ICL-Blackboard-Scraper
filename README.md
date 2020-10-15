@@ -1,6 +1,6 @@
 # ICL-Blackboard-Scraper
 This script will login to blackboard and download all the files to labelled directories.
-Only tested on Windows so far, but should work on Mac and linux. requires Python 3.6
+Only tested on Windows so far, but should work on Mac and linux. requires minimum Python 3.6
 
 The scraper looks through the modules that are visible on blackboard's homepage, you can control which modules will be scraped by showing and hiding modules, this can be done through the settings button see below.
 
