@@ -43,9 +43,11 @@ def check_version(version):
         
 # clear the argument directory of data
 def purge_data(folder):
-    shutil.rmtree(folder)
-    log_print(f"'{folder}' Directory purged")
-    os.mkdir(folder)
+    try:
+        shutil.rmtree(folder)
+        log_print(f"'{folder}' Directory purged")
+    except FileNotFoundError: "No directory to purge"
+    os.mkdir(folder)   os.mkdir(folder)
 
 # setup chrome and chromedriver
 def setup(download_dir):
